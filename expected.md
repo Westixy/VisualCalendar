@@ -26,12 +26,12 @@
   },
   planified:[
     {
-      datetime:'2017-02-22 14:00.00',
+      datetime:'2017-02-22 14:00',
       type:'simple', // that's going to the class of the box
       title:'occuped',
       description:'Something to popover'
     },{
-      datetime:'2017-02-22 16:00.00',
+      datetime:'2017-02-22 16:00',
       type:'simple', // that's going to the class of the box
       title:'occuped',
       description:'Something to popover',
@@ -44,15 +44,16 @@
 - When you click on a box, throw a callback defined by the user like
 
 ```js
-datestart = '2017-02-22 14:00.00'
+datestart = '2017-02-22 14:00'
 
-VisualCalendar.onClick = function(datestart){ console.log(datestart) }
+VisualCalendar.onSelect = function(datestart){ console.log(datestart) }
+VisualCalendar.onUnselect = function(datestart){ console.log(datestart) }
 ```
 
 - When a multiple select is done, throw a callback defined by the user like
 
 ```js
-datestarts = ['2017-02-22 14:00.00','2017-02-22 16:00.00','2017-02-23 14:00.00']
+datestarts = ['2017-02-22 14:00','2017-02-22 16:00','2017-02-23 14:00']
 
 VisualCalendar.onMultiple = function(datestarts){ console.log(datestarts) }
 ```
