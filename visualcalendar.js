@@ -14,7 +14,10 @@ class VisualCalendar{
     this.config=null;
     this.builded=null;
     this.selected=[];
-    this.ev={};
+    this.ev={
+      onSelect:console.log,
+      onUnselect:function(){},
+    };
     if(config!==undefined){
       this.hydrate(config);
       this.build();
@@ -41,10 +44,11 @@ class VisualCalendar{
       planified:config.planified||[]
     }
     if(config.ev!==undefined){
-      this.ev.onSelect=config.ev.onSelect||()=>{};
-      this.ev.onUnselect=config.ev.onUnselect||()=>{};
-      this.ev.onMultiple=config.ev.onMultiple||()=>{};
+      this.ev.onSelect=config.ev.onSelect||function(){};
+      this.ev.onUnselect=config.ev.onUnselect||function(){};
+      this.ev.onMultiple=config.ev.onMultiple||function(){};
     }
+
   }
   build(){
     if(this.config===null) throw new Error('You need to hydrate VisualCalendar');
@@ -60,8 +64,8 @@ class VisualCalendar{
         while(r1<=r2){ // TODO verifier que ça fonctionner
           dates.push(
             Number.parseInt(r1.getFullYear()).toStringN(4)+'-'+
-            Number.parseInt(r1.getMonth()).toStringN(2)+'-'+
-            Number.parseInt(r1.getDay()).toStringN(2));
+            Number.parseInt(r1.getMonth()+1).toStringN(2)+'-'+
+            Number.parseInt(r1.getUTCDate()).toStringN(2));
           r1 = new Date(r1.getTime()+new Date('1970-01-02').getTime())
         }
       }else dates.push(date);
@@ -78,7 +82,7 @@ class VisualCalendar{
         r1=Number.parseInt(r1)+period;
       }
       let htos=r1.toStringN(4).match(/\d{2}/);
-      hours.push(htos[0]+':'+htos[1]);
+      //hours.push(htos[0]+':'+htos[1]);
     });
     this.builded.hours=hours;
   }
@@ -87,54 +91,85 @@ class VisualCalendar{
     for(let i=0;i<this.config.planified.length;i++){
       var planif=this.config.planified[i];
       var planifDate=new Date(planif.datetime);
-      var hourMax =(Number.parseInt(planifDate.getHours().toString()+planifDate.getMinutes().toStringN(2))+Number.parseInt(this.config.hours.period.replace(':',''))).toString(4);
-      hourMax=hourMax[0]+hourMax[1]+':'+hourMax[2]+hourMax[3]
-      var planifMax=new Date(datetime.trim().split(' ')[0]+' '+hourMax)
+      var hourMax =(Number.parseInt(planifDate.getHours().toString()+planifDate.getMinutes().toStringN(2))+Number.parseInt(this.config.hours.period.replace(':',''))).toStringN(4);
+      hourMax=hourMax[0]+hourMax[1]+':'+hourMax[2]+hourMax[3];
+      var planifMax=new Date(datetime.getFullYear()+'-'+(datetime.getMonth()+1).toStringN(2)+'-'+datetime.getUTCDate().toStringN(2)+' '+hourMax);
+      console.log(planifDate,datetime,planifMax,datetime.getTime()>=planifDate.getTime() && datetime.getTime()<planifMax.getTime());
+      if(
+          datetime.getFullYear()==planifDate.getFullYear() &&
+          datetime.getMonth()==planifDate.getMonth()&&
+          datetime.getUTCDate()==planifDate.getUTCDate()&&
+          datetime.getTime()>=planifDate.getTime() && datetime.getTime()<planifMax.getTime()
+        ) return planif;
     }
+    return null;
   }
   generate(){
- // TODO DEBUG
     if(this.builded===null) throw new Error('You need to build VisualCalendar');
-
     let cnt=Element.parseHTML('<div class="vc-cnt"></div>');
-    cnt.appendx('<table></table>');
-
-    let header=Element.parseHTML('<tr></tr>');
-    header.appendx('<th>hours</th>');
+    let table =document.createElement('table');
+    let header=table.createTHead();
+    header=header.insertRow(0);
+    let heh = header.insertCell(0);
+    heh.textContent='hours';
+    heh.className='vc-table-head';
     for(let i=0; i<this.builded.dates.length;i++){
-      header.appendx('<th>'+this.builded.dates[i]+'</th>');
+      let he = header.insertCell(i+1);
+      he.textContent=this.builded.dates[i];
+      he.className='vc-table-head';
     }
-    let table = cnt.select('table');
     table.appendx(header);
     for(let i=0; i<this.builded.hours.length; i++){
-      let row=Element.parseHTML('<tr></tr>');
+      let row=table.insertRow(i+1);
+      let head=row.insertCell(0);
+      head.textContent=this.builded.hours[i];
       row.appendx('<td>'+this.builded.hours[i]+'</td>');
       for(let j=0; j<this.builded.dates.length;j++){
-        var currentTimeDate=this.builded.dates[j]+' '+this.builded.hours[i];
-        let me = this.dateHasEvent(new Date(currentTimeDate));
-        let selectable =(this.config.params.readonly)?'':'selectable ';
-        let className=((me)?selectable+me.type:((this.config.params.readonly)?'':'clickable'));
-        var elem = row.appendx('<td class="'+className+'">'+me.text+'</td>');
+        var CTD=this.builded.dates[j]+' '+this.builded.hours[i];
+        let me = this.dateHasEvent(CTD);
+        let selectable =(this.config.params.readonly)?'':' vc-selectable';
+        let className=((me)?selectable+" "+me.type:((this.config.params.readonly)?'':' vc-clickable'));
+        var elem = row.insertCell(j+1);
+        elem.className=className;
+        elem.innerHTML=((me)?me.title:'');
+        row.appendx(elem);
         if(!this.config.params.readonly)
         elem.on('click',(ev)=>{
-          let index=this.selected.indexOf(currentTimeDate);
-          if(index==-1){
-            if(this.selected.length==0||this.config.params.multiple==true || this.config.params.multiple<=this.selected.length ){
-              this.selected.push(currentTimeDate);
-              elem.className+=' vc-selected';
-              this.ev.onSelect(elem,currentTimeDate);
+          if(!(me)){
+            let el=ev.target;
+            let curdate=this.builded.dates[j]+' '+this.builded.hours[i];
+            let index=ev.target.className.indexOf(' vc-selected');
+
+            if(index==-1){
+              if(this.selected.length==0||this.config.params.multiple==true || this.config.params.multiple>this.selected.length ){
+
+                this.selected.push(curdate);
+                ev.target.className+=' vc-selected';
+                this.ev.onSelect(ev.target,curdate);
+              }
+            }
+            if(index!=-1){
+              this.selected.splice(this.selected.indexOf(curdate),1);
+              ev.target.className=ev.target.className.replace(' vc-selected','');
+              this.ev.onUnselect(ev.target,curdate);
+            }
+            if(typeof this.config.params.multiple!='boolean')if(this.config.params.multiple<=this.selected.length){
+              cnt.className.indexOf(' vc-nomoreselect')
+              if(cnt.className.indexOf(' vc-nomoreselect')==-1){
+                cnt.className += ' vc-nomoreselect';
+              }
+            }else{
+              if(cnt.className.indexOf(' vc-nomoreselect')!=-1){
+                cnt.className=cnt.className.replace(' vc-nomoreselect','')
+              }
             }
           }
-          if(index!=-1){
-            this.selected.splice(index,1);
-            elem.className.replace(' vc-selected','');
-            this.ev.onUnselect(elem,currentTimeDate);
-          }
-
         });
 
       }
       table.appendx(row);
     }
+    cnt.appendChild(table);
+    document.body.select(this.config.anchor).appendChild(cnt);
   }
 }
