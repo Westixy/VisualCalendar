@@ -14,7 +14,8 @@
 
 ```js
 {
-  params{
+  anchor:'div#vc-anchor',
+  params:{
     readonly:false,
     multiple:3 // max number for multiple select or true for unlimited or false
   },

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Visual Calendar</title>
+  </head>
+  <body>
+    <div id="vc-cnt">
+      <div id="vc-col-hour" class="vc-col">
+        <div class="vc-head">Hours</div>
+        <div class="vc-box">08:00 - 10:00</div>
+        <div class="vc-box">10:00 - 12:00</div>
+        <div class="vc-box">14:00 - 16:00</div>
+        <div class="vc-box">16:00 - 18:00</div>
+        <div class="vc-box">18:00 - 20:00</div>
+      </div>
+      <div class="vc-col">
+        <div class="vc-head">24.02.2017</div>
+        <div class="vc-box"></div>
+        <div class="vc-box"></div>
+        <div class="vc-box simple">occuped</div>
+        <div class="vc-box simple">occuped</div>
+        <div class="vc-box simple">occuped</div>
+      </div>
+      <div class="vc-col">
+        <div class="vc-head">25.02.2017</div>
+        <div class="vc-box cours">Cours</div>
+        <div class="vc-box cours">Cours</div>
+        <div class="vc-box"></div>
+        <div class="vc-box"></div>
+        <div class="vc-box"></div>
+      </div>
+      <div class="vc-col">
+        <div class="vc-head">26.02.2017</div>
+        <div class="vc-box"></div>
+        <div class="vc-box"></div>
+        <div class="vc-box people">Marie</div>
+        <div class="vc-box"></div>
+        <div class="vc-box"></div>
+      </div>
+      <div class="vc-col">
+        <div class="vc-head">29.02.2017</div>
+        <div class="vc-box"></div>
+        <div class="vc-box people">Jean</div>
+        <div class="vc-box people">Deamien</div>
+        <div class="vc-box"></div>
+        <div class="vc-box"></div>
+      </div>
+    </div>
+    <style>
+      #vc-cnt{
+        text-align: center;
+        font-family: Arial;
+      }
+      .vc-box, .vc-head {
+        height: 27px;
+        padding: 3px 0px;
+        box-sizing: border-box;
+        font-size: 15px;
+        border-bottom: 1px solid #888;
+      }
+
+      .vc-col {
+        display: block;
+        width: 100px;
+        float: left;
+        border-right: 1px solid #888;
+      }
+      #vc-col-hour>.vc-box {
+          font-size: 12px;
+      }
+
+      .vc-head {
+          font-weight: bold;
+          border-top: 1px solid #888;
+          background-color: #888;
+          color: #fff;
+      }
+
+      .vc-col:nth-child(1) {border-left: 1px solid #888;}
+    </style>
+    <script src="visualcalendar.js" charset="utf-8"></script>
+    <script type="text/javascript">
+      var vc = new VisualCalendar();
+      vc.config={
+        anchor:'div#vc-anchor',
+        params:{
+          readonly:false,
+          multiple:3 // max number for multiple select or true for unlimited or false
+        },
+        dates:[['2017-02-22','2017-02-23'],'2017-02-27'],
+        hours:{
+          ranges:[['08:00','12:00'],['14:00','20:00']],
+          period:'02:00'
+        },
+        planified:[
+          {
+            datetime:'2017-02-22 14:00.00',
+            type:'simple', // that's going to the class of the box
+            title:'occuped',
+            description:'Something to popover'
+          },{
+            datetime:'2017-02-22 16:00.00',
+            type:'simple', // that's going to the class of the box
+            title:'occuped',
+            description:'Something to popover',
+          }
+        ]
+      };
+      vc.build();
+      vc.generate();
+    </script>
+  </body>
+</html>
