@@ -12,6 +12,12 @@ Visual calendar that have day column and hours like
 
 ## Getting started
 
+include js file
+
+```html
+<script src="VisualCalendar.js"></script>
+```
+
 ```js
  var vc = new VisualCalendar();
 
@@ -67,7 +73,7 @@ function actionOnPlanifClick(elem,me){
 
 ### onSelect
 
-action that is triggered when you click on a planif (if is clickable and not readonly)
+action when you click on a reserv with a multiple select
 
 ```js
 function actionOnSelect(elem,datetime){
@@ -78,7 +84,7 @@ function actionOnSelect(elem,datetime){
 
 ### onUnselect
 
-action that is triggered when you click on a planif (if is clickable and not readonly)
+action when you unclick on a reserv with a multiple select
 
 ```js
 function actionOnUnselect(elem,datetime){
